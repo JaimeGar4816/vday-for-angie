@@ -7,14 +7,13 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- background glow only -->
   <div class="bg" aria-hidden="true"></div>
 
-  <!-- full-screen hearts (always) -->
+  <!-- Full-screen hearts layer -->
   <div id="floatZone" class="float-zone" aria-hidden="true"></div>
 
   <main class="stage">
-    <!-- SCREEN 1 -->
+    <!-- SCREEN 1: LOCK -->
     <section id="screen-lock" class="screen active">
       <div id="heartStage" class="heart-stage">
         <div class="heart-half left"></div>
@@ -34,22 +33,24 @@
       </div>
     </section>
 
-    <!-- SCREEN 2 -->
+    <!-- SCREEN 2: REASONS -->
     <section id="screen-reasons" class="screen">
-      <h2 class="title">Reasons why I love you</h2>
-      <p class="tiny">I tried to list them all… but it always comes back to one.</p>
+      <div class="center-stack">
+        <h2 class="title">Reasons why I love you</h2>
+        <p class="tiny">I tried to list them all… but it always comes back to one.</p>
 
-      <div class="reason-wrap">
-        <div id="reasonText" class="reason"></div>
-      </div>
+        <div class="reason-wrap">
+          <div id="reasonText" class="reason"></div>
+        </div>
 
-      <div class="row center">
-        <button id="startReasonsBtn" class="btn big">Show me ❤️</button>
-        <button id="replayBtn1" class="btn ghost">Replay ↻</button>
+        <div class="row">
+          <button id="startReasonsBtn" class="btn big">Show me ❤️</button>
+          <button id="replayBtn1" class="btn ghost">Replay ↻</button>
+        </div>
       </div>
     </section>
 
-    <!-- SCREEN 3 -->
+    <!-- SCREEN 3: FINAL (FULL SCREEN) -->
     <section id="screen-final" class="screen">
       <div class="final-center">
         <h2 class="final-q">¿Quieres ser mi San Valentín?</h2>
@@ -59,13 +60,13 @@
           <button id="yesBtn" class="btn big yes">YES 💘</button>
         </div>
 
-        <!-- NO floats anywhere on the page -->
         <button id="noBtn" class="btn no">no</button>
 
         <div id="loveMsg" class="love-msg hidden">
           <div class="love-line" id="loveLine1">I love you Angie.</div>
-          <div class="love-line forever hidden" id="loveLine2">Forever.</div>
-          <div class="row center" style="margin-top:18px;">
+          <div class="love-line forever" id="loveLine2">Forever.</div>
+
+          <div class="row" style="margin-top:18px;">
             <button id="replayBtn2" class="btn ghost">Replay ↻</button>
           </div>
         </div>
