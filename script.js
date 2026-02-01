@@ -23,11 +23,9 @@ const noBtn = document.getElementById("noBtn");
 const loveMsg = document.getElementById("loveMsg");
 const loveLine2 = document.getElementById("loveLine2");
 
-// Audio
 const bgMusic = document.getElementById("bgMusic");
 const clickSound = document.getElementById("clickSound");
 let musicStarted = false;
-
 let running = false;
 
 const reasons = [
@@ -56,20 +54,17 @@ function show(screen) {
   screen.classList.add("active");
 }
 
-function setHint(msg) {
-  hint.textContent = msg;
-}
+function setHint(msg) { hint.textContent = msg; }
 
-/* ---------- AUDIO + POP CLICK ---------- */
+/* ---------- POP CLICK + MUSIC ---------- */
 function playClick(strong = false) {
   if (!clickSound) return;
 
   const pop = clickSound.cloneNode();
-  pop.volume = strong ? 1.0 : 0.85;
+  pop.volume = strong ? 1.0 : 0.88;
   pop.playbackRate = 0.95 + Math.random() * 0.1;
   pop.play().catch(() => {});
 
-  // tiny "double-pop" on strong clicks
   if (strong) {
     setTimeout(() => {
       const echo = clickSound.cloneNode();
@@ -108,15 +103,11 @@ function swellMusic() {
   const original = 0.22;
   const peak = 0.28;
   bgMusic.volume = peak;
-  setTimeout(() => {
-    bgMusic.volume = original;
-  }, 2200);
+  setTimeout(() => { bgMusic.volume = original; }, 2200);
 }
 
 /* ---------- DATE INPUT ---------- */
-function onlyDigits(s) {
-  return (s || "").replace(/[^\d]/g, "");
-}
+function onlyDigits(s) { return (s || "").replace(/[^\d]/g, ""); }
 
 function normalizeTypedDate(s) {
   const raw = (s || "").trim();
@@ -140,10 +131,7 @@ input.addEventListener("input", () => {
   const digits = onlyDigits(input.value);
 
   if (digits.length <= 4) {
-    let out = "";
-    if (digits.length >= 2) out = digits.slice(0, 2);
-    else out = digits;
-
+    let out = digits.slice(0, 2);
     if (digits.length > 2) out += "/" + digits.slice(2, 4);
     input.value = out.slice(0, 5);
     return;
@@ -155,7 +143,7 @@ input.addEventListener("input", () => {
   input.value = `${mm}/${dd}/${yyyy}`.slice(0, 10);
 });
 
-// keyboard pops (typing)
+// keyboard pop while typing
 input.addEventListener("keydown", (e) => {
   const allowed =
     (e.key >= "0" && e.key <= "9") ||
@@ -190,14 +178,11 @@ unlockBtn.addEventListener("click", () => {
   startMusic();
   setHint("");
   heartStage.classList.add("open");
-
   setTimeout(() => show(reasonsScreen), 950);
 });
 
 /* ---------- REASONS FLOW ---------- */
-function sleep(ms) {
-  return new Promise((r) => setTimeout(r, ms));
-}
+function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
 async function runReasons() {
   if (running) return;
@@ -218,13 +203,12 @@ async function runReasons() {
   await sleep(1900);
 
   show(finalScreen);
+  launchHearts(7000, 95);
 
-  // start floating hearts in the full screen
-  launchHearts(6500, 95);
-
-  // reset final UI
+  // reset final state
   loveMsg.classList.add("hidden");
-  loveLine2.classList.add("hidden");
+  loveMsg.classList.remove("show");
+  loveLine2.classList.remove("hidden"); // keep in DOM for animation
   choiceWrap.classList.remove("hidden");
   placeNoRandom();
 
@@ -259,15 +243,13 @@ function spawnHeart() {
   el.className = "float-heart";
 
   const pick = Math.random();
-  if (pick < 0.33) el.textContent = "❤️";
-  else if (pick < 0.66) el.textContent = "💖";
-  else el.textContent = "💕";
+  el.textContent = pick < 0.33 ? "❤️" : (pick < 0.66 ? "💖" : "💕");
 
   el.style.left = Math.floor(Math.random() * 92 + 4) + "%";
   el.style.fontSize = Math.floor(Math.random() * 18 + 18) + "px";
   floatZone.appendChild(el);
 
-  setTimeout(() => el.remove(), 3000);
+  setTimeout(() => el.remove(), 3100);
 }
 
 /* ---------- NO BUTTON DODGE (FULL PAGE) ---------- */
@@ -278,7 +260,7 @@ function placeNoRandom() {
   const pad = 14;
   const noRect = noBtn.getBoundingClientRect();
 
-  // clear right/bottom so it never stretches
+  // important: prevent stretching
   noBtn.style.right = "auto";
   noBtn.style.bottom = "auto";
 
@@ -294,11 +276,11 @@ function placeNoRandom() {
 
 function dodgeFromPoint(px, py) {
   const noRect = noBtn.getBoundingClientRect();
-  const noCenterX = noRect.left + noRect.width / 2;
-  const noCenterY = noRect.top + noRect.height / 2;
+  const cx = noRect.left + noRect.width / 2;
+  const cy = noRect.top + noRect.height / 2;
 
-  const dx = noCenterX - px;
-  const dy = noCenterY - py;
+  const dx = cx - px;
+  const dy = cy - py;
 
   const dist = Math.sqrt(dx * dx + dy * dy);
   const threshold = 130;
@@ -310,7 +292,6 @@ function dodgeFromPoint(px, py) {
 
   const pad = 14;
 
-  // clear right/bottom so it never stretches
   noBtn.style.right = "auto";
   noBtn.style.bottom = "auto";
 
@@ -346,18 +327,22 @@ noBtn.addEventListener("click", (e) => {
   if (finalScreen.classList.contains("active")) placeNoRandom();
 });
 
-/* ---------- YES BUTTON ---------- */
+/* ---------- YES BUTTON (RESTORE CINEMATIC EFFECT) ---------- */
 yesBtn.addEventListener("click", () => {
   playClick(true);
 
   choiceWrap.classList.add("hidden");
+
   loveMsg.classList.remove("hidden");
-  loveLine2.classList.add("hidden");
+  loveMsg.classList.remove("show");
+
+  // restart animation cleanly
+  void loveMsg.offsetWidth;
+  loveMsg.classList.add("show");
 
   launchHearts(2600, 55);
 
   setTimeout(() => {
-    loveLine2.classList.remove("hidden");
     swellMusic();
     launchHearts(2200, 50);
   }, 950);
@@ -378,7 +363,7 @@ function resetAll() {
   floatZone.innerHTML = "";
 
   loveMsg.classList.add("hidden");
-  loveLine2.classList.add("hidden");
+  loveMsg.classList.remove("show");
   choiceWrap.classList.remove("hidden");
 
   musicStarted = false;
@@ -387,7 +372,7 @@ function resetAll() {
     bgMusic.currentTime = 0;
   }
 
-  // reset NO back to top-right
+  // reset NO to top-right
   noBtn.style.left = "";
   noBtn.style.top = "";
   noBtn.style.right = "24px";
@@ -399,7 +384,6 @@ function resetAll() {
 
 replayBtn1.addEventListener("click", () => { playClick(false); resetAll(); });
 replayBtn2.addEventListener("click", () => { playClick(false); resetAll(); });
-
 window.addEventListener("resize", () => {
   if (finalScreen.classList.contains("active")) placeNoRandom();
 });
