@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -6,22 +6,26 @@
   <title>❤️</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
-  <div class="bg-hearts"></div>
+  <!-- background glow only -->
+  <div class="bg" aria-hidden="true"></div>
 
-  <main class="wrap">
-    <section class="screen active" id="screen-lock">
-      <div class="heart-stage" id="heartStage">
+  <!-- full-screen hearts (always) -->
+  <div id="floatZone" class="float-zone" aria-hidden="true"></div>
+
+  <main class="stage">
+    <!-- SCREEN 1 -->
+    <section id="screen-lock" class="screen active">
+      <div id="heartStage" class="heart-stage">
         <div class="heart-half left"></div>
         <div class="heart-half right"></div>
 
-        <div class="heart-center">
-          <h1>Enter our anniversary date</h1>
-          <p>Type it in to unlock my heart ❤️</p>
+        <div class="lock-ui">
+          <h1 class="headline">Enter our anniversary date</h1>
+          <p class="sub">Type it in to unlock my heart ❤️</p>
 
           <div class="row">
-            <input id="annivInput" class="input secret" type="password" maxlength="10" />
+            <input id="annivInput" class="input secret" type="password" inputmode="numeric" autocomplete="off" maxlength="10" />
             <button id="unlockBtn" class="btn">Unlock ❤️</button>
           </div>
 
@@ -30,39 +34,49 @@
       </div>
     </section>
 
-    <section class="screen" id="screen-reasons">
-      <h2>Reasons why I love you</h2>
+    <!-- SCREEN 2 -->
+    <section id="screen-reasons" class="screen">
+      <h2 class="title">Reasons why I love you</h2>
       <p class="tiny">I tried to list them all… but it always comes back to one.</p>
 
-      <div class="reason-box">
+      <div class="reason-wrap">
         <div id="reasonText" class="reason"></div>
       </div>
 
-      <button id="startReasonsBtn" class="btn big">Show me ❤️</button>
+      <div class="row center">
+        <button id="startReasonsBtn" class="btn big">Show me ❤️</button>
+        <button id="replayBtn1" class="btn ghost">Replay ↻</button>
+      </div>
     </section>
 
-    <section class="screen" id="screen-final">
-      <div class="final">
-        <h2>¿Quieres ser mi San Valentín?</h2>
+    <!-- SCREEN 3 -->
+    <section id="screen-final" class="screen">
+      <div class="final-center">
+        <h2 class="final-q">¿Quieres ser mi San Valentín?</h2>
+        <p class="final-sub">❤️💖❤️💖❤️</p>
 
-        <div id="choiceWrap">
+        <div id="choiceWrap" class="choice-wrap">
           <button id="yesBtn" class="btn big yes">YES 💘</button>
         </div>
 
+        <!-- NO floats anywhere on the page -->
         <button id="noBtn" class="btn no">no</button>
 
-        <div id="loveMsg" class="hidden">
-          <div>I love you Angie.</div>
-          <div id="loveLine2" class="forever hidden">Forever.</div>
+        <div id="loveMsg" class="love-msg hidden">
+          <div class="love-line" id="loveLine1">I love you Angie.</div>
+          <div class="love-line forever hidden" id="loveLine2">Forever.</div>
+          <div class="row center" style="margin-top:18px;">
+            <button id="replayBtn2" class="btn ghost">Replay ↻</button>
+          </div>
         </div>
       </div>
     </section>
+
+    <footer class="foot">Made with love.</footer>
   </main>
 
-  <div id="floatZone" class="float-zone"></div>
-
-  <audio id="bgMusic" src="music.mp3" loop></audio>
-  <audio id="clickSound" src="click.mp3"></audio>
+  <audio id="bgMusic" src="music.mp3" loop preload="auto"></audio>
+  <audio id="clickSound" src="click.mp3" preload="auto"></audio>
 
   <script src="script.js"></script>
 </body>
