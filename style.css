@@ -1,4 +1,4 @@
-:root{
+ :root{
   --bg:#0f0b10;
   --txt:#f7eef9;
   --muted:#d9c7df;
@@ -344,10 +344,13 @@ body{
   right: 18px;
   font-size: 12px;
   padding: 6px 10px;
+  min-width: unset;
+  width: auto;
   opacity: 0.55;
   border-radius: 999px;
-  z-index: 5;
+  z-index: 10;
 }
+
 
 
 .love-msg{
