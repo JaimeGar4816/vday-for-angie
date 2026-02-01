@@ -143,6 +143,10 @@ body{
   letter-spacing: 1px;
 }
 
+.input.secret{
+  letter-spacing: 6px;
+}
+
 .input:focus{
   border-color: rgba(255,90,165,.6);
   box-shadow: 0 0 0 4px rgba(255,90,165,.15);
