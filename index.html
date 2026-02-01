@@ -1,96 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>❤️</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>❤️</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-  <body>
-    <div class="bg-hearts" aria-hidden="true"></div>
+<body>
+  <div class="bg-hearts"></div>
 
-    <main class="wrap">
-      <section class="card">
-        <!-- Screen 1: Lock -->
-        <div id="screen-lock" class="screen active">
-          <div class="heart-stage" id="heartStage">
-            <div class="heart-half left"></div>
-            <div class="heart-half right"></div>
+  <main class="wrap">
+    <section class="screen active" id="screen-lock">
+      <div class="heart-stage" id="heartStage">
+        <div class="heart-half left"></div>
+        <div class="heart-half right"></div>
 
-            <div class="heart-center">
-              <h1 class="headline">Enter our anniversary date</h1>
-              <p class="sub">Type it in to unlock my heart ❤️</p>
+        <div class="heart-center">
+          <h1>Enter our anniversary date</h1>
+          <p>Type it in to unlock my heart ❤️</p>
 
-              <div class="row">
-                <input
-                  id="annivInput"
-                  class="input secret"
-                  type="password"
-                  inputmode="numeric"
-                  autocomplete="off"
-                  placeholder=""
-                  maxlength="10"
-                />
-                <button id="unlockBtn" class="btn">Unlock ❤️</button>
-              </div>
-
-              <p id="hint" class="hint"></p>
-            </div>
+          <div class="row">
+            <input id="annivInput" class="input secret" type="password" maxlength="10" />
+            <button id="unlockBtn" class="btn">Unlock ❤️</button>
           </div>
+
+          <p id="hint" class="hint"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-reasons">
+      <h2>Reasons why I love you</h2>
+      <p class="tiny">I tried to list them all… but it always comes back to one.</p>
+
+      <div class="reason-box">
+        <div id="reasonText" class="reason"></div>
+      </div>
+
+      <button id="startReasonsBtn" class="btn big">Show me ❤️</button>
+    </section>
+
+    <section class="screen" id="screen-final">
+      <div class="final">
+        <h2>¿Quieres ser mi San Valentín?</h2>
+
+        <div id="choiceWrap">
+          <button id="yesBtn" class="btn big yes">YES 💘</button>
         </div>
 
-        <!-- Screen 2: Reasons -->
-        <div id="screen-reasons" class="screen">
-          <h2 class="title">Reasons why I love you</h2>
-          <p class="tiny">I tried to list them all… but it always comes back to one.</p>
+        <button id="noBtn" class="btn no">no</button>
 
-          <div class="reason-box">
-            <div id="reasonText" class="reason"></div>
-          </div>
-
-          <div class="row center">
-            <button id="startReasonsBtn" class="btn big">Show me ❤️</button>
-            <button id="replayBtn1" class="btn ghost">Replay ↻</button>
-          </div>
+        <div id="loveMsg" class="hidden">
+          <div>I love you Angie.</div>
+          <div id="loveLine2" class="forever hidden">Forever.</div>
         </div>
+      </div>
+    </section>
+  </main>
 
-        <!-- Screen 3: Final -->
-        <div id="screen-final" class="screen">
-          <div class="final">
-            <div class="final-text">
-              <h2 class="final-q">¿Quieres ser mi San Valentín?</h2>
-              <p class="final-sub">❤️💖❤️💖❤️</p>
+  <div id="floatZone" class="float-zone"></div>
 
-              <div id="choiceWrap" class="choice-wrap">
-                <button id="yesBtn" class="btn big yes">YES 💘</button>
-              </div>
+  <audio id="bgMusic" src="music.mp3" loop></audio>
+  <audio id="clickSound" src="click.mp3"></audio>
 
-              <button id="noBtn" class="btn no">no</button>
-
-
-              <div id="loveMsg" class="love-msg hidden">
-                <div id="loveLine1" class="love-line">I love you Angie.</div>
-                <div id="loveLine2" class="love-line forever hidden">Forever.</div>
-              </div>
-
-              <div class="row center">
-                <button id="replayBtn2" class="btn ghost">Replay ↻</button>
-              </div>
-            </div>
-
-            <div id="floatZone" class="float-zone" aria-hidden="true"></div>
-          </div>
-        </div>
-      </section>
-
-      <footer class="foot">Made with love.</footer>
-    </main>
-
-    <!-- AUDIO (put music.mp3 + click.mp3 in the repo root) -->
-    <audio id="bgMusic" src="music.mp3" loop preload="auto"></audio>
-    <audio id="clickSound" src="click.mp3" preload="auto"></audio>
-
-    <script src="script.js"></script>
-  </body>
+  <script src="script.js"></script>
+</body>
 </html>
