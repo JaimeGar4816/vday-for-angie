@@ -17,6 +17,7 @@ const reasonText = document.getElementById("reasonText");
 
 const floatZone = document.getElementById("floatZone");
 
+// Final screen buttons / message
 const choiceWrap = document.getElementById("choiceWrap");
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
@@ -60,6 +61,8 @@ function setHint(msg) {
   hint.textContent = msg;
 }
 
+/* ---------- AUDIO ---------- */
+
 function playClick() {
   if (!clickSound) return;
   clickSound.currentTime = 0;
@@ -70,13 +73,14 @@ function startMusic() {
   if (musicStarted || !bgMusic) return;
   musicStarted = true;
 
+  // smooth fade-in
   bgMusic.volume = 0.0;
   bgMusic.play().catch(() => {});
 
   let v = 0.0;
-  const target = 0.22;     // final volume
-  const step = 0.02;       // how fast it rises
-  const interval = 120;    // ms between steps
+  const target = 0.22;
+  const step = 0.02;
+  const interval = 120;
 
   const fade = setInterval(() => {
     v += step;
@@ -89,11 +93,24 @@ function startMusic() {
   }, interval);
 }
 
+function swellMusic() {
+  if (!bgMusic) return;
+
+  const original = 0.22;
+  const peak = 0.28;
+
+  bgMusic.volume = peak;
+  setTimeout(() => {
+    bgMusic.volume = original;
+  }, 2200);
+}
 
 [unlockBtn, startBtn, replayBtn1, replayBtn2, yesBtn, noBtn].forEach((btn) => {
   if (!btn) return;
   btn.addEventListener("click", playClick);
 });
+
+/* ---------- DATE INPUT (HIDDEN) ---------- */
 
 function onlyDigits(s) {
   return (s || "").replace(/[^\d]/g, "");
@@ -157,6 +174,8 @@ unlockBtn.addEventListener("click", () => {
   }, 950);
 });
 
+/* ---------- REASONS FLOW ---------- */
+
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -183,9 +202,12 @@ async function runReasons() {
   show(finalScreen);
   launchHearts(6500, 95);
 
+  // reset final UI state each time
   loveMsg.classList.add("hidden");
   loveLine2.classList.add("hidden");
   choiceWrap.classList.remove("hidden");
+
+  // place NO somewhere sneaky
   placeNoRandom();
 
   running = false;
@@ -225,29 +247,33 @@ function spawnHeart() {
   setTimeout(() => el.remove(), 3000);
 }
 
-/* ---------- NO BUTTON DODGE ---------- */
+/* ---------- NO BUTTON DODGE (NOW USES FINAL SCREEN BOUNDS) ---------- */
 
 function rand(min, max) { return Math.random() * (max - min) + min; }
 function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
 function placeNoRandom() {
-  const wrapRect = choiceWrap.getBoundingClientRect();
+  const wrapRect = finalScreen.getBoundingClientRect();
   const noRect = noBtn.getBoundingClientRect();
-  const padding = 8;
 
+  const padding = 10;
+
+  // keep inside final screen area
   const maxX = wrapRect.width - noRect.width - padding;
   const maxY = wrapRect.height - noRect.height - padding;
 
   const x = rand(padding, Math.max(padding, maxX));
   const y = rand(padding, Math.max(padding, maxY));
 
-  noBtn.style.left = x + "px";
-  noBtn.style.top = y + "px";
-  noBtn.style.transform = "translate(0, 0)";
+  // because NO is absolutely positioned, we position relative to viewport using fixed
+  // so set it via transform on top/right? We'll do fixed positioning for reliability.
+  noBtn.style.position = "fixed";
+  noBtn.style.left = (wrapRect.left + x) + "px";
+  noBtn.style.top = (wrapRect.top + y) + "px";
 }
 
 function dodgeFromPoint(px, py) {
-  const wrapRect = choiceWrap.getBoundingClientRect();
+  const wrapRect = finalScreen.getBoundingClientRect();
   const noRect = noBtn.getBoundingClientRect();
 
   const noCenterX = noRect.left + noRect.width / 2;
@@ -260,35 +286,40 @@ function dodgeFromPoint(px, py) {
   const threshold = 120;
   if (dist > threshold) return;
 
-  const push = 140;
+  const push = 170;
   const nx = dx === 0 ? rand(-1, 1) : dx / dist;
   const ny = dy === 0 ? rand(-1, 1) : dy / dist;
 
-  const currentLeft = parseFloat(noBtn.style.left || "0");
-  const currentTop = parseFloat(noBtn.style.top || "0");
+  const padding = 10;
 
-  let nextLeft = currentLeft + nx * push;
-  let nextTop = currentTop + ny * push;
+  let nextLeft = noRect.left + nx * push;
+  let nextTop = noRect.top + ny * push;
 
-  const padding = 8;
-  const maxLeft = wrapRect.width - noRect.width - padding;
-  const maxTop = wrapRect.height - noRect.height - padding;
+  // clamp to final screen bounds
+  const minLeft = wrapRect.left + padding;
+  const minTop = wrapRect.top + padding;
+  const maxLeft = wrapRect.right - noRect.width - padding;
+  const maxTop = wrapRect.bottom - noRect.height - padding;
 
-  nextLeft = clamp(nextLeft, padding, Math.max(padding, maxLeft));
-  nextTop = clamp(nextTop, padding, Math.max(padding, maxTop));
+  nextLeft = clamp(nextLeft, minLeft, Math.max(minLeft, maxLeft));
+  nextTop = clamp(nextTop, minTop, Math.max(minTop, maxTop));
 
-  if (Math.abs(nextLeft - currentLeft) < 10 && Math.abs(nextTop - currentTop) < 10) {
+  // if stuck, randomize
+  if (Math.abs(nextLeft - noRect.left) < 6 && Math.abs(nextTop - noRect.top) < 6) {
     placeNoRandom();
     return;
   }
 
+  noBtn.style.position = "fixed";
   noBtn.style.left = nextLeft + "px";
   noBtn.style.top = nextTop + "px";
-  noBtn.style.transform = "translate(0, 0)";
 }
 
-choiceWrap.addEventListener("mousemove", (e) => dodgeFromPoint(e.clientX, e.clientY));
-choiceWrap.addEventListener("touchstart", (e) => {
+// dodge on mouse movement anywhere on final screen
+finalScreen.addEventListener("mousemove", (e) => dodgeFromPoint(e.clientX, e.clientY));
+
+// dodge on touch start anywhere on final screen
+finalScreen.addEventListener("touchstart", (e) => {
   const t = e.touches[0];
   dodgeFromPoint(t.clientX, t.clientY);
 }, { passive: true });
@@ -333,9 +364,15 @@ function resetAll() {
 
   floatZone.innerHTML = "";
 
+  // final screen reset
   loveMsg.classList.add("hidden");
   loveLine2.classList.add("hidden");
   choiceWrap.classList.remove("hidden");
+
+  // reset NO back to normal before start
+  noBtn.style.position = "";
+  noBtn.style.left = "";
+  noBtn.style.top = "";
 
   // reset music
   musicStarted = false;
@@ -348,20 +385,11 @@ function resetAll() {
   setTimeout(() => input.focus(), 60);
 }
 
-function swellMusic() {
-  if (!bgMusic) return;
-
-  const original = 0.22;
-  const peak = 0.28;
-
-  bgMusic.volume = peak;
-
-  setTimeout(() => {
-    bgMusic.volume = original;
-  }, 2200);
-}
-
-
 startBtn.addEventListener("click", runReasons);
 replayBtn1.addEventListener("click", resetAll);
 replayBtn2.addEventListener("click", resetAll);
+
+// Keep NO in bounds if window is resized while on final screen
+window.addEventListener("resize", () => {
+  if (finalScreen.classList.contains("active")) placeNoRandom();
+});
