@@ -17,7 +17,8 @@ const reasonText = document.getElementById("reasonText");
 
 const floatZone = document.getElementById("floatZone");
 
-// Final screen buttons / message
+// Final screen bits
+const finalBox = document.querySelector("#screen-final .final");
 const choiceWrap = document.getElementById("choiceWrap");
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
@@ -66,14 +67,15 @@ function setHint(msg) {
 function playClick() {
   if (!clickSound) return;
   clickSound.currentTime = 0;
+  clickSound.volume = 0.75; // louder click (0.0 – 1.0)
   clickSound.play().catch(() => {});
 }
+
 
 function startMusic() {
   if (musicStarted || !bgMusic) return;
   musicStarted = true;
 
-  // smooth fade-in
   bgMusic.volume = 0.0;
   bgMusic.play().catch(() => {});
 
@@ -95,7 +97,6 @@ function startMusic() {
 
 function swellMusic() {
   if (!bgMusic) return;
-
   const original = 0.22;
   const peak = 0.28;
 
@@ -110,7 +111,7 @@ function swellMusic() {
   btn.addEventListener("click", playClick);
 });
 
-/* ---------- DATE INPUT (HIDDEN) ---------- */
+/* ---------- DATE INPUT ---------- */
 
 function onlyDigits(s) {
   return (s || "").replace(/[^\d]/g, "");
@@ -165,7 +166,6 @@ unlockBtn.addEventListener("click", () => {
   }
 
   startMusic();
-
   setHint("");
   heartStage.classList.add("open");
 
@@ -202,12 +202,11 @@ async function runReasons() {
   show(finalScreen);
   launchHearts(6500, 95);
 
-  // reset final UI state each time
   loveMsg.classList.add("hidden");
   loveLine2.classList.add("hidden");
   choiceWrap.classList.remove("hidden");
 
-  // place NO somewhere sneaky
+  // make sure NO is positioned inside the final box and dodges
   placeNoRandom();
 
   running = false;
@@ -247,79 +246,81 @@ function spawnHeart() {
   setTimeout(() => el.remove(), 3000);
 }
 
-/* ---------- NO BUTTON DODGE (NOW USES FINAL SCREEN BOUNDS) ---------- */
+/* ---------- NO BUTTON DODGE (INSIDE FINAL BOX) ---------- */
 
 function rand(min, max) { return Math.random() * (max - min) + min; }
 function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
 function placeNoRandom() {
-  const wrapRect = finalScreen.getBoundingClientRect();
+  if (!finalBox || !noBtn) return;
+
+  const boxRect = finalBox.getBoundingClientRect();
   const noRect = noBtn.getBoundingClientRect();
+  const pad = 12;
 
-  const padding = 10;
+  const maxX = boxRect.width - noRect.width - pad;
+  const maxY = boxRect.height - noRect.height - pad;
 
-  // keep inside final screen area
-  const maxX = wrapRect.width - noRect.width - padding;
-  const maxY = wrapRect.height - noRect.height - padding;
+  const x = rand(pad, Math.max(pad, maxX));
+  const y = rand(pad, Math.max(pad, maxY));
 
-  const x = rand(padding, Math.max(padding, maxX));
-  const y = rand(padding, Math.max(padding, maxY));
-
-  // because NO is absolutely positioned, we position relative to viewport using fixed
-  // so set it via transform on top/right? We'll do fixed positioning for reliability.
-  noBtn.style.position = "fixed";
-  noBtn.style.left = (wrapRect.left + x) + "px";
-  noBtn.style.top = (wrapRect.top + y) + "px";
+  // Position relative to finalBox
+  noBtn.style.left = x + "px";
+  noBtn.style.top = y + "px";
 }
 
-function dodgeFromPoint(px, py) {
-  const wrapRect = finalScreen.getBoundingClientRect();
+function dodgeFromPoint(clientX, clientY) {
+  if (!finalBox || !noBtn) return;
+
+  const boxRect = finalBox.getBoundingClientRect();
   const noRect = noBtn.getBoundingClientRect();
 
-  const noCenterX = noRect.left + noRect.width / 2;
-  const noCenterY = noRect.top + noRect.height / 2;
+  // Convert pointer to coords inside the box
+  const px = clientX - boxRect.left;
+  const py = clientY - boxRect.top;
+
+  // Current NO center inside box
+  const noCenterX = (noRect.left - boxRect.left) + noRect.width / 2;
+  const noCenterY = (noRect.top - boxRect.top) + noRect.height / 2;
 
   const dx = noCenterX - px;
   const dy = noCenterY - py;
 
-  const dist = Math.sqrt(dx * dx + dy * dy);
-  const threshold = 120;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  const threshold = 110;
   if (dist > threshold) return;
 
   const push = 170;
   const nx = dx === 0 ? rand(-1, 1) : dx / dist;
   const ny = dy === 0 ? rand(-1, 1) : dy / dist;
 
-  const padding = 10;
+  const pad = 12;
 
-  let nextLeft = noRect.left + nx * push;
-  let nextTop = noRect.top + ny * push;
+  const currentLeft = parseFloat(noBtn.style.left || "18");
+  const currentTop = parseFloat(noBtn.style.top || "18");
 
-  // clamp to final screen bounds
-  const minLeft = wrapRect.left + padding;
-  const minTop = wrapRect.top + padding;
-  const maxLeft = wrapRect.right - noRect.width - padding;
-  const maxTop = wrapRect.bottom - noRect.height - padding;
+  let nextLeft = currentLeft + nx * push;
+  let nextTop = currentTop + ny * push;
 
-  nextLeft = clamp(nextLeft, minLeft, Math.max(minLeft, maxLeft));
-  nextTop = clamp(nextTop, minTop, Math.max(minTop, maxTop));
+  const maxLeft = boxRect.width - noRect.width - pad;
+  const maxTop = boxRect.height - noRect.height - pad;
 
-  // if stuck, randomize
-  if (Math.abs(nextLeft - noRect.left) < 6 && Math.abs(nextTop - noRect.top) < 6) {
+  nextLeft = clamp(nextLeft, pad, Math.max(pad, maxLeft));
+  nextTop = clamp(nextTop, pad, Math.max(pad, maxTop));
+
+  // If it barely moved, randomize
+  if (Math.abs(nextLeft - currentLeft) < 6 && Math.abs(nextTop - currentTop) < 6) {
     placeNoRandom();
     return;
   }
 
-  noBtn.style.position = "fixed";
   noBtn.style.left = nextLeft + "px";
   noBtn.style.top = nextTop + "px";
 }
 
-// dodge on mouse movement anywhere on final screen
-finalScreen.addEventListener("mousemove", (e) => dodgeFromPoint(e.clientX, e.clientY));
-
-// dodge on touch start anywhere on final screen
-finalScreen.addEventListener("touchstart", (e) => {
+// mouse + touch events on the box
+finalBox.addEventListener("mousemove", (e) => dodgeFromPoint(e.clientX, e.clientY));
+finalBox.addEventListener("touchstart", (e) => {
   const t = e.touches[0];
   dodgeFromPoint(t.clientX, t.clientY);
 }, { passive: true });
@@ -364,15 +365,9 @@ function resetAll() {
 
   floatZone.innerHTML = "";
 
-  // final screen reset
   loveMsg.classList.add("hidden");
   loveLine2.classList.add("hidden");
   choiceWrap.classList.remove("hidden");
-
-  // reset NO back to normal before start
-  noBtn.style.position = "";
-  noBtn.style.left = "";
-  noBtn.style.top = "";
 
   // reset music
   musicStarted = false;
@@ -389,7 +384,6 @@ startBtn.addEventListener("click", runReasons);
 replayBtn1.addEventListener("click", resetAll);
 replayBtn2.addEventListener("click", resetAll);
 
-// Keep NO in bounds if window is resized while on final screen
 window.addEventListener("resize", () => {
   if (finalScreen.classList.contains("active")) placeNoRandom();
 });
