@@ -23,6 +23,11 @@ const noBtn = document.getElementById("noBtn");
 const loveMsg = document.getElementById("loveMsg");
 const loveLine2 = document.getElementById("loveLine2");
 
+// Audio
+const bgMusic = document.getElementById("bgMusic");
+const clickSound = document.getElementById("clickSound");
+let musicStarted = false;
+
 let running = false;
 
 const reasons = [
@@ -55,6 +60,41 @@ function setHint(msg) {
   hint.textContent = msg;
 }
 
+function playClick() {
+  if (!clickSound) return;
+  clickSound.currentTime = 0;
+  clickSound.play().catch(() => {});
+}
+
+function startMusic() {
+  if (musicStarted || !bgMusic) return;
+  musicStarted = true;
+
+  bgMusic.volume = 0.0;
+  bgMusic.play().catch(() => {});
+
+  let v = 0.0;
+  const target = 0.22;     // final volume
+  const step = 0.02;       // how fast it rises
+  const interval = 120;    // ms between steps
+
+  const fade = setInterval(() => {
+    v += step;
+    if (v >= target) {
+      bgMusic.volume = target;
+      clearInterval(fade);
+      return;
+    }
+    bgMusic.volume = v;
+  }, interval);
+}
+
+
+[unlockBtn, startBtn, replayBtn1, replayBtn2, yesBtn, noBtn].forEach((btn) => {
+  if (!btn) return;
+  btn.addEventListener("click", playClick);
+});
+
 function onlyDigits(s) {
   return (s || "").replace(/[^\d]/g, "");
 }
@@ -64,14 +104,14 @@ function normalizeTypedDate(s) {
   const digits = onlyDigits(raw);
 
   if (digits.length >= 8) {
-    const mm = digits.slice(0,2);
-    const dd = digits.slice(2,4);
-    const yyyy = digits.slice(4,8);
+    const mm = digits.slice(0, 2);
+    const dd = digits.slice(2, 4);
+    const yyyy = digits.slice(4, 8);
     return `${mm}/${dd}/${yyyy}`;
   }
   if (digits.length >= 4) {
-    const mm = digits.slice(0,2);
-    const dd = digits.slice(2,4);
+    const mm = digits.slice(0, 2);
+    const dd = digits.slice(2, 4);
     return `${mm}/${dd}`;
   }
   return raw;
@@ -82,23 +122,23 @@ input.addEventListener("input", () => {
 
   if (digits.length <= 4) {
     let out = "";
-    if (digits.length >= 2) out = digits.slice(0,2);
+    if (digits.length >= 2) out = digits.slice(0, 2);
     else out = digits;
 
-    if (digits.length > 2) out += "/" + digits.slice(2,4);
-    input.value = out.slice(0,5);
+    if (digits.length > 2) out += "/" + digits.slice(2, 4);
+    input.value = out.slice(0, 5);
     return;
   }
 
-  const mm = digits.slice(0,2);
-  const dd = digits.slice(2,4);
-  const yyyy = digits.slice(4,8);
-  input.value = `${mm}/${dd}/${yyyy}`.slice(0,10);
+  const mm = digits.slice(0, 2);
+  const dd = digits.slice(2, 4);
+  const yyyy = digits.slice(4, 8);
+  input.value = `${mm}/${dd}/${yyyy}`.slice(0, 10);
 });
 
 unlockBtn.addEventListener("click", () => {
   const typed = normalizeTypedDate(input.value);
-  const ok = (typed === ANNIVERSARY_FULL) || (typed === ANNIVERSARY_SHORT);
+  const ok = typed === ANNIVERSARY_FULL || typed === ANNIVERSARY_SHORT;
 
   if (!ok) {
     setHint("Not quite… try again ❤️");
@@ -106,6 +146,8 @@ unlockBtn.addEventListener("click", () => {
     setTimeout(() => input.classList.remove("shake"), 380);
     return;
   }
+
+  startMusic();
 
   setHint("");
   heartStage.classList.add("open");
@@ -116,7 +158,7 @@ unlockBtn.addEventListener("click", () => {
 });
 
 function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
+  return new Promise((r) => setTimeout(r, ms));
 }
 
 async function runReasons() {
@@ -133,7 +175,6 @@ async function runReasons() {
     await sleep(760);
   }
 
-  // DRAMATIC MOMENT
   reasonsScreen.classList.add("freeze");
   reasonText.className = "reason you";
   reasonText.textContent = "YOU.";
@@ -142,7 +183,6 @@ async function runReasons() {
   show(finalScreen);
   launchHearts(6500, 95);
 
-  // reset final UI state each time
   loveMsg.classList.add("hidden");
   loveLine2.classList.add("hidden");
   choiceWrap.classList.remove("hidden");
@@ -216,13 +256,13 @@ function dodgeFromPoint(px, py) {
   const dx = noCenterX - px;
   const dy = noCenterY - py;
 
-  const dist = Math.sqrt(dx*dx + dy*dy);
+  const dist = Math.sqrt(dx * dx + dy * dy);
   const threshold = 120;
   if (dist > threshold) return;
 
   const push = 140;
-  const nx = dx === 0 ? rand(-1,1) : dx / dist;
-  const ny = dy === 0 ? rand(-1,1) : dy / dist;
+  const nx = dx === 0 ? rand(-1, 1) : dx / dist;
+  const ny = dy === 0 ? rand(-1, 1) : dy / dist;
 
   const currentLeft = parseFloat(noBtn.style.left || "0");
   const currentTop = parseFloat(noBtn.style.top || "0");
@@ -265,15 +305,13 @@ yesBtn.addEventListener("click", () => {
   choiceWrap.classList.add("hidden");
   loveMsg.classList.remove("hidden");
 
-  // ensure Forever starts hidden each time
   loveLine2.classList.add("hidden");
 
-  // hearts now
   launchHearts(2600, 55);
 
-  // then “Forever.” drops in
   setTimeout(() => {
     loveLine2.classList.remove("hidden");
+    swellMusic();
     launchHearts(2200, 50);
   }, 950);
 });
@@ -299,9 +337,30 @@ function resetAll() {
   loveLine2.classList.add("hidden");
   choiceWrap.classList.remove("hidden");
 
+  // reset music
+  musicStarted = false;
+  if (bgMusic) {
+    bgMusic.pause();
+    bgMusic.currentTime = 0;
+  }
+
   show(lockScreen);
   setTimeout(() => input.focus(), 60);
 }
+
+function swellMusic() {
+  if (!bgMusic) return;
+
+  const original = 0.22;
+  const peak = 0.28;
+
+  bgMusic.volume = peak;
+
+  setTimeout(() => {
+    bgMusic.volume = original;
+  }, 2200);
+}
+
 
 startBtn.addEventListener("click", runReasons);
 replayBtn1.addEventListener("click", resetAll);
