@@ -320,29 +320,35 @@ body{
 /* ---------- YES/NO + LOVE MESSAGE ---------- */
 
 .choice-wrap{
-  margin-top: 18px;
-  width: min(520px, 92%);
-  height: 86px;
-  position: relative;
+  margin-top: 22px;
+  width: 100%;
   display:flex;
   justify-content:center;
-  align-items:center;
-  gap:14px;
 }
 
 .choice-wrap .btn.big{ min-width: 160px; }
 
 .btn.yes{
-  border-color: rgba(255,90,165,.45);
-  box-shadow: 0 0 0 4px rgba(255,90,165,.10);
+  min-width: 200px;
+  font-size: 18px;
+  border-color: rgba(255,90,165,.6);
+  box-shadow:
+    0 0 0 6px rgba(255,90,165,.12),
+    0 10px 30px rgba(255,90,165,.35);
 }
+
 
 .btn.no{
   position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(40px, -50%);
+  top: 18px;
+  right: 18px;
+  font-size: 12px;
+  padding: 6px 10px;
+  opacity: 0.55;
+  border-radius: 999px;
+  z-index: 5;
 }
+
 
 .love-msg{
   margin-top: 18px;
