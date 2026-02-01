@@ -20,15 +20,16 @@
 
             <div class="heart-center">
               <h1 class="headline">Enter our anniversary date</h1>
-              <p class="sub">Format: <b>MM/DD/YYYY</b> (example: 10/13/2022)</p>
+              <p class="sub">Type it in to unlock my heart ❤️</p>
 
               <div class="row">
                 <input
                   id="annivInput"
-                  class="input"
+                  class="input secret"
+                  type="password"
                   inputmode="numeric"
                   autocomplete="off"
-                  placeholder="10/13/2022"
+                  placeholder=""
                   maxlength="10"
                 />
                 <button id="unlockBtn" class="btn">Unlock ❤️</button>
@@ -83,6 +84,10 @@
 
       <footer class="foot">Made with love.</footer>
     </main>
+
+    <!-- AUDIO (put music.mp3 + click.mp3 in the repo root) -->
+    <audio id="bgMusic" src="music.mp3" loop preload="auto"></audio>
+    <audio id="clickSound" src="click.mp3" preload="auto"></audio>
 
     <script src="script.js"></script>
   </body>
